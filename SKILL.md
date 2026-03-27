@@ -1,167 +1,242 @@
+# 即梦AI 文生图/文生视频技能
+
+> 将文本转换为高质量图片或视频，基于火山引擎即梦AI
+
 ---
-name: jimeng-ai
-description: "基于火山引擎即梦AI的文生图/文生视频能力，支持通过文本描述生成图片和视频。Use when: user asks to generate images or videos from text descriptions. Supports v4.0 image generation and v3.0 1080P video generation."
-homepage: https://www.volcengine.com/docs/85621/1820192
-metadata: { "openclaw": { "emoji": "🎨", "requires": { "bins": ["ts-node", "npm"], "env": ["VOLCENGINE_AK", "VOLCENGINE_SK"] }, "primaryEnv": "VOLCENGINE_AK" } }
+
+## 🎯 技能描述
+
+这个技能可以帮助用户：
+
+- 🎨 **生成AI图片** - 通过文本描述生成高质量图片（支持动漫、写实、艺术等多种风格）
+- 🎥 **生成AI视频** - 通过文本描述生成高清视频（1080P，支持5s/10s）
+- 🔁 **断点续传** - 自动识别重复任务，避免重复生成
+- ⚡ **异步查询** - 智能轮询任务状态，提供实时反馈
+- 🔄 **智能重试** - 网络波动时自动重试，提高成功率
+
 ---
 
-# 即梦AI 文生图/文生视频 Skill
+## 📝 输入参数
 
-基于火山引擎即梦AI的文生图和文生视频能力，支持通过文本描述生成图片和视频。
+### 文生图
 
-## 功能特性
+- **prompt** (必需): 文本描述，50-200字效果最佳
+- **version** (可选): API版本，支持 `v30`、`v31`、`v40`，默认 `v40`（推荐）
+- **ratio** (可选): 图片宽高比，支持 `1:1`、`9:16`、`16:9`、`3:4`、`4:3`、`2:3`、`3:2`、`1:2`、`2:1`，默认 `9:16`
+- **count** (可选): 生成数量，1-4张，默认 1
+- **width/height** (可选): 指定图片尺寸，优先级高于ratio
+- **seed** (可选): 随机种子，用于固定生成结果
+- **wait** (可选): 是否等待任务完成，默认 false
 
-- 支持即梦AI文生图 v4.0（推荐）
-- 支持即梦AI文生视频 v3.0 1080P
-- 断点续传：使用 MD5(提示词) 保存任务状态
-- 异步查询：支持断点续传，避免重复提交相同任务
+**示例**:
+```
+生成一张动漫风格的猫咪图片，9:16竖屏
+```
 
-## 环境变量配置
+### 文生视频
 
-在使用前，需要配置火山引擎凭证：
+- **prompt** (必需): 文本描述，建议30-100字
+- **ratio** (可选): 视频宽高比，支持 `16:9`、`4:3`、`1:1`、`3:4`、`9:16`、`21:9`，默认 `9:16`
+- **duration** (可选): 视频时长，支持 `5` 或 `10` 秒，默认 `5`
+- **fps** (可选): 帧率，支持 `24` 或 `30`，默认 `24`
+- **wait** (可选): 是否等待任务完成，默认 false
+
+**示例**:
+```
+生成一段猫咪在草地上奔跑的视频，9:16竖屏，5秒
+```
+
+---
+
+## 🎨 输出结果
+
+### 文生图输出
+
+- **成功**: 返回图片保存路径
+- **进行中**: 返回任务ID，提示稍后查询
+- **失败**: 返回错误信息
+
+**示例输出**:
+```
+✅ 图片生成成功！
+📁 保存路径: /workspace/.../1.jpg
+🎨 尺寸: 1440x2560
+📏 Task ID: 18279481414285085801
+```
+
+### 文生视频输出
+
+- **成功**: 返回视频URL
+- **进行中**: 返回任务ID，提示稍后查询
+- **失败**: 返回错误信息
+
+**示例输出**:
+```
+✅ 视频生成成功！
+🔗 视频URL: https://...
+🎬 时长: 5秒
+🎬 分辨率: 1080P
+📏 Task ID: ...
+```
+
+---
+
+## 🔧 环境要求
+
+### 必需环境变量
+
+- **VOLCENGINE_AK**: 火山引擎 Access Key
+- **VOLCENGINE_SK**: 火山引擎 Secret Key
+
+### 可选环境变量
+
+- **VOLCENGINE_TOKEN**: 临时凭证的Security Token
+- **DEBUG**: 调试模式（true/false）
+- **OUTPUT_DIR**: 输出目录（默认 `./output`）
+
+---
+
+## 🚀 使用方法
+
+### 快速开始
 
 ```bash
-export VOLCENGINE_AK="your-access-key"
-export VOLCENGINE_SK="your-secret-key"
+# 文生图
+cd jimeng-ai
+npx ts-node scripts/text2image.ts "一只可爱的猫咪" --version v40
+
+# 文生视频
+npx ts-node scripts/text2video.ts "猫咪在草地上奔跑" --duration 5
 ```
 
-或者在 `~/.openclaw/openclaw.json` 中配置：
-
-```json
-{
-  "skills": {
-    "entries": {
-      "jimeng-ai": {
-        "env": {
-          "VOLCENGINE_AK": "your-access-key",
-          "VOLCENGINE_SK": "your-secret-key"
-        }
-      }
-    }
-  }
-}
-```
-
-获取方式：
-1. 登录 [火山引擎控制台](https://console.volcengine.com/)
-2. 进入"访问控制" -> "密钥管理"
-3. 创建或查看已有访问密钥
-
-## 安装依赖
-
-首次使用前需要安装依赖：
+### 等待任务完成
 
 ```bash
-cd {baseDir}
-npm install
+# 添加 --wait 参数等待完成
+npx ts-node scripts/text2image.ts "提示词" --wait
+npx ts-node scripts/text2video.ts "提示词" --wait
 ```
 
-## 文生图使用方法
-
-### 基础用法
+### 断点续传
 
 ```bash
-cd {baseDir} && npx ts-node scripts/text2image.ts "一只可爱的猫咪" --version v40
+# 相同的提示词会自动识别，不重复提交
+npx ts-node scripts/text2image.ts "提示词"
+# （第一次提交）
+npx ts-node scripts/text2image.ts "提示词"
+# （第二次查询结果）
 ```
 
-### 完整参数
+---
 
-```bash
-cd {baseDir} && npx ts-node scripts/text2image.ts "提示词" \
-  --version v40 \
-  --ratio 16:9 \
-  --count 2
+## 💡 提示词技巧
+
+### 好的提示词结构
+
 ```
-
-### 参数说明
-
-| 参数 | 说明 | 默认值 |
-|------|------|--------|
-| `prompt` | 图片生成提示词（必填） | - |
-| `--version` | API版本: `v30`, `v31`, `v40` | `v31` |
-| `--ratio` | 宽高比: `1:1`, `9:16`, `16:9`, `3:4`, `4:3`, `2:3`, `3:2`, `1:2`, `2:1` | `16:9` |
-| `--count` | 生成数量 1-4 | `1` |
-| `--output` | 图片输出目录 | `./output` |
-| `--debug` | 调试模式 | `false` |
+主体描述 + 场景设定 + 风格要求 + 质量描述
+```
 
 ### 示例
 
-生成风景画：
-
-```bash
-cd {baseDir} && npx ts-node scripts/text2image.ts "山水风景画，水墨风格" --version v40 --ratio 16:9
+✅ **动漫风格**:
+```
+一只毛茸茸的橘色猫咪，坐在阳光下的窗台上，背景是温馨的室内，动漫风格，高质量，4K分辨率
 ```
 
-生成科幻城市：
-
-```bash
-cd {baseDir} && npx ts-node scripts/text2image.ts "未来科幻城市，霓虹灯光，赛博朋克风格" --version v40 --ratio 16:9 --count 2
+✅ **写实风格**:
+```
+金色的麦田在夕阳下，微风吹过，远处的山峦，田园风光，国家地理风格，照片级质量
 ```
 
-## 文生视频使用方法
-
-### 基础用法
-
-```bash
-cd {baseDir} && npx ts-node scripts/text2video.ts "一只可爱的猫咪在草地上奔跑"
+✅ **科幻风格**:
+```
+未来城市夜景，霓虹灯闪烁，飞行汽车穿梭，赛博朋克风格，细节丰富，宽画幅
 ```
 
-### 完整参数
+### 更多示例
 
-```bash
-cd {baseDir} && npx ts-node scripts/text2video.ts "提示词" \
-  --ratio 9:16 \
-  --duration 5 \
-  --fps 24
-```
+参见 [examples/prompts.md](examples/prompts.md)
 
-### 参数说明
+---
 
-| 参数 | 说明 | 默认值 |
-|------|------|--------|
-| `prompt` | 视频生成提示词（必填） | - |
-| `--ratio` | 宽高比: `16:9`, `4:3`, `1:1`, `3:4`, `9:16`, `21:9` | `9:16` |
-| `--duration` | 视频时长: `5` 或 `10` 秒 | `5` |
-| `--fps` | 帧率: `24` 或 `30` | `24` |
-| `--output` | 视频输出目录 | `./output` |
+## ⚠️ 注意事项
 
-## 工作流程
+### API限制
 
-### 首次执行（新任务）
+- 速率限制：注意不要频繁调用，建议间隔5秒以上
+- 配额限制：监控API配额使用情况
+- 任务超时：文生图一般10-30秒，文生视频1-3分钟
 
-1. 向 API 提交任务
-2. 使用 `md5(提示词)` 作为文件夹名创建目录
-3. 保存任务信息
-4. 返回任务ID
+### 最佳实践
 
-### 后续执行（异步查询）
+1. **提示词优化**: 使用详细的描述，包含场景、风格、质量要求
+2. **版本选择**: v4.0版本质量最好，推荐使用
+3. **断点续传**: 相同提示词会自动去重，不会重复扣费
+4. **批量操作**: 批量操作时注意间隔，避免触发速率限制
+5. **错误处理**: 遇到错误时，检查ERROR_CODES.md文档
 
-使用相同提示词运行将查询已有任务：
-1. 如果图片已存在 → 立即返回图片路径
-2. 如果任务未完成 → 返回任务状态
-3. 如果任务已完成 → 保存并返回图片
+---
 
-## 输出格式
+## 📚 相关文档
 
-任务完成后，图片/视频保存在：
-
-```
-output/
-└── <md5(prompt)>/
-    ├── param.json           # 请求参数
-    ├── response.json        # API响应
-    ├── taskId.txt           # 任务ID
-    └── 1.jpg, 2.jpg, ...    # 生成的图片
-```
-
-## 注意事项
-
-- 推荐使用 `--version v40` 参数，效果更好
-- 任务提交后需要等待一段时间才能完成
-- 使用相同提示词可以查询任务状态
-- 生成的图片以 base64 格式返回并自动保存
-
-## 参考文档
-
+- [README.md](README.md) - 完整使用文档
+- [ERROR_CODES.md](ERROR_CODES.md) - 错误码说明
+- [examples/prompts.md](examples/prompts.md) - 提示词示例
+- [examples/usage.md](examples/usage.md) - 使用示例
 - [火山引擎即梦AI文生图文档](https://www.volcengine.com/docs/85621/1820192)
 - [火山引擎即梦AI文生视频文档](https://www.volcengine.com/docs/85621/1792702)
+
+---
+
+## 🛠️ 技术实现
+
+### 核心技术
+
+- **TypeScript**: 类型安全的JavaScript
+- **Axios**: HTTP请求库
+- **火山引擎API**: 即梦AI官方API
+- **OpenAPI签名**: 火山引擎认证
+
+### 优化特性
+
+- ✅ 分级日志系统（DEBUG/INFO/WARN/ERROR）
+- ✅ 统一配置管理
+- ✅ 智能重试机制（指数退避）
+- ✅ 断点续传（MD5去重）
+- ✅ 路径遍历防护
+- ✅ 完善的错误处理
+
+---
+
+## 📊 版本信息
+
+- **当前版本**: v1.1.0
+- **发布时间**: 2026-03-28
+- **TypeScript**: 5.0
+- **Node.js**: 18+
+- **许可证**: MIT
+
+---
+
+## 🎯 适用场景
+
+- ✅ 内容创作（配图、视频素材）
+- ✅ 社交媒体（Instagram、小红书等）
+- ✅ 游戏开发（立绘、素材）
+- ✅ 广告制作（产品图片、视频）
+- ✅ 艺术探索（AI生成能力测试）
+
+---
+
+## 🤝 贡献
+
+欢迎提交Issue和Pull Request！
+
+---
+
+*技能类型: AI内容生成*
+*技能版本: v1.1.0*
+*最后更新: 2026-03-28*
+*状态: ✅ 稳定版本*
+*测试状态: ✅ 已验证*
