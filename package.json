@@ -1,0 +1,31 @@
+{
+  "name": "jimeng-ai",
+  "version": "1.1.0",
+  "description": "即梦AI 文生图/文生视频技能 - 基于火山引擎",
+  "main": "index.js",
+  "scripts": {
+    "text2image": "ts-node scripts/text2image.ts",
+    "text2video": "ts-node scripts/text2video.ts",
+    "test:tools": "ts-node test-tools.ts",
+    "test:image": "ts-node scripts/text2image.ts \"测试图片生成\" --version v40",
+    "test:video": "ts-node scripts/text2video.ts \"测试视频生成\" --wait"
+  },
+  "keywords": [
+    "jimeng-ai",
+    "text-to-image",
+    "text-to-video",
+    "volcengine",
+    "ai",
+    "optimization"
+  ],
+  "author": "aiwell0721",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "ts-node": "^10.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
